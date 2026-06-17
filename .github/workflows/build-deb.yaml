@@ -55,11 +55,14 @@ jobs:
           libdbus-1-dev \
           debhelper devscripts
 
-    - name: Configure & Build
+    - name: Configure & Build (static link phobos)
       run: |
-        ./configure --prefix=/usr
+        LDCFLAGS="-link-defaultlib-shared=false" ./configure --prefix=/usr
         make clean
-        make
+        make LDCFLAGS="-link-defaultlib-shared=false"
+
+    - name: Verify linking
+      run: ldd ./onedrive | grep -E "not found|phobos" || echo "OK: no missing libs"
 
     - name: Build .deb package
       run: |
@@ -71,7 +74,7 @@ jobs:
 
         mkdir -p "$PKG_DIR/DEBIAN"
 
-        printf 'Package: onedrive\nVersion: %s\nSection: net\nPriority: optional\nArchitecture: amd64\nDepends: libcurl4, libsqlite3-0, libdbus-1-3, libphobos2-ldc-shared110\nMaintainer: Your Name <your@email.com>\nDescription: OneDrive Client for Linux (Custom Build)\n  A free Microsoft OneDrive client for Linux.\n  Forked from https://github.com/abraunegg/onedrive\n' "$VERSION" > "$PKG_DIR/DEBIAN/control"
+        printf 'Package: onedrive\nVersion: %s\nSection: net\nPriority: optional\nArchitecture: amd64\nDepends: libcurl4, libsqlite3-0, libdbus-1-3\nMaintainer: Your Name <your@email.com>\nDescription: OneDrive Client for Linux (Custom Build)\n  A free Microsoft OneDrive client for Linux.\n  Forked from https://github.com/abraunegg/onedrive\n' "$VERSION" > "$PKG_DIR/DEBIAN/control"
 
         dpkg-deb --build --root-owner-group "$PKG_DIR"
 
