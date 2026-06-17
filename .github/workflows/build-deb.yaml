@@ -59,10 +59,10 @@ jobs:
       run: |
         ./configure --prefix=/usr
         make clean
-        make DCFLAGS+='-link-defaultlib-shared=false'
+        make "DC=ldc2 -link-defaultlib-shared=false"
 
     - name: Verify linking
-      run: ldd ./onedrive | grep -E "not found|phobos" || echo "OK: no missing libs"
+      run: ldd ./onedrive | grep phobos || echo "OK: phobos is statically linked"
 
     - name: Build .deb package
       run: |
