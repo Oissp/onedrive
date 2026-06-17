@@ -57,9 +57,9 @@ jobs:
 
     - name: Configure & Build (static link phobos)
       run: |
-        LDCFLAGS="-link-defaultlib-shared=false" ./configure --prefix=/usr
+        ./configure --prefix=/usr
         make clean
-        make LDCFLAGS="-link-defaultlib-shared=false"
+        make DCFLAGS+='-link-defaultlib-shared=false'
 
     - name: Verify linking
       run: ldd ./onedrive | grep -E "not found|phobos" || echo "OK: no missing libs"
