@@ -37,7 +37,10 @@ jobs:
         if [[ "${{ github.ref }}" == refs/tags/* ]]; then
           VER="${GITHUB_REF#refs/tags/v}"
         else
-          VER="0.0.0~dev-$(date +%Y%m%d)-${GITHUB_SHA::7}"
+          # git describe gives e.g. v2.5.10-80-g47dc550; convert to 2.5.10+80+g47dc550
+          # so dpkg sorts this ABOVE the upstream release and above any distro package
+          DESC=$(git describe --tags --long 2>/dev/null || echo "0-0-g${GITHUB_SHA::7}")
+          VER=$(echo "$DESC" | sed 's/^v//; s/-\([0-9]*\)-g/+\1+g/')
         fi
         echo "version=$VER" >> "$GITHUB_OUTPUT"
 
