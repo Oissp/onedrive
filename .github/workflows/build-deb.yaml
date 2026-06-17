@@ -23,6 +23,7 @@ jobs:
 
     - name: Fetch upstream tags
       run: |
+        git config --global --add safe.directory /__w/onedrive/onedrive
         git remote add upstream https://github.com/abraunegg/onedrive.git
         git fetch upstream --tags
 
