@@ -11,6 +11,9 @@ jobs:
   build-deb:
     runs-on: ubuntu-latest
     container: debian:bookworm
+    defaults:
+      run:
+        shell: bash
 
     steps:
     - name: Install git
