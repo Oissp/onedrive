@@ -18,6 +18,11 @@ jobs:
         submodules: recursive
         fetch-depth: 0
 
+    - name: Fetch upstream tags
+      run: |
+        git remote add upstream https://github.com/abraunegg/onedrive.git
+        git fetch upstream --tags
+
     - name: Get version from tag
       id: version
       run: |
