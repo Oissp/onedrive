@@ -13,6 +13,9 @@ jobs:
     container: debian:bookworm
 
     steps:
+    - name: Install git
+      run: apt-get update && apt-get install -y git
+
     - name: Checkout
       uses: actions/checkout@v4
       with:
@@ -43,8 +46,7 @@ jobs:
           pkg-config \
           ldc \
           libdbus-1-dev \
-          debhelper devscripts \
-          git
+          debhelper devscripts
 
     - name: Configure & Build
       run: |
