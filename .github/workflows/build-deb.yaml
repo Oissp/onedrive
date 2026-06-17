@@ -29,7 +29,7 @@ jobs:
         if [[ "${{ github.ref }}" == refs/tags/* ]]; then
           VER="${GITHUB_REF#refs/tags/v}"
         else
-          VER="dev-$(date +%Y%m%d)-${GITHUB_SHA::7}"
+          VER="0.0.0~dev-$(date +%Y%m%d)-${GITHUB_SHA::7}"
         fi
         echo "version=$VER" >> "$GITHUB_OUTPUT"
 
@@ -47,7 +47,7 @@ jobs:
 
     - name: Configure & Build
       run: |
-        ./configure
+        ./configure --prefix=/usr
         make clean
         make
 
@@ -57,7 +57,7 @@ jobs:
         PKG_DIR="onedrive-${VERSION}"
         DESTDIR="$PWD/$PKG_DIR"
 
-        make install DESTDIR="$DESTDIR" PREFIX=/usr
+        make install DESTDIR="$DESTDIR"
 
         mkdir -p "$PKG_DIR/DEBIAN"
 
