@@ -1,0 +1,90 @@
+# .github/workflows/build-deb.yaml
+name: Build Debian Package
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:  # 也支持手动触发
+
+jobs:
+  build-deb:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+        fetch-depth: 0
+
+    - name: Get version from tag
+      id: version
+      run: |
+        if [[ "${{ github.ref }}" == refs/tags/* ]]; then
+          VER="${GITHUB_REF#refs/tags/v}"
+        else
+          VER="dev-$(date +%Y%m%d)-${GITHUB_SHA::7}"
+        fi
+        echo "version=$VER" >> "$GITHUB_OUTPUT"
+
+    - name: Install build dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          build-essential \
+          libcurl4-openssl-dev \
+          libsqlite3-dev \
+          pkg-config \
+          ldc \
+          libdbus-1-dev \
+          debhelper devscripts
+
+    - name: Configure & Build
+      run: |
+        ./configure
+        make clean
+        make
+
+    - name: Build .deb package
+      run: |
+        VERSION="${{ steps.version.outputs.version }}"
+        PKG_DIR="onedrive-${VERSION}"
+        DESTDIR="$PWD/$PKG_DIR"
+
+        # Install into a staging directory
+        make install DESTDIR="$DESTDIR" PREFIX=/usr
+
+        # Create DEBIAN control directory
+        mkdir -p "$PKG_DIR/DEBIAN"
+
+        cat > "$PKG_DIR/DEBIAN/control" <<EOF
+Package: onedrive
+Version: $VERSION
+Section: net
+Priority: optional
+Architecture: amd64
+Depends: libcurl4, libsqlite3-0, libdbus-1-3
+Maintainer: Your Name <your@email.com>
+Description: OneDrive Client for Linux (Custom Build)
+  A free Microsoft OneDrive client for Linux.
+  Forked from https://github.com/abraunegg/onedrive
+EOF
+
+        # Build the .deb
+        dpkg-deb --build --root-owner-group "$PKG_DIR"
+
+    - name: Upload .deb artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: onedrive-${{ steps.version.outputs.version }}-amd64
+        path: "*.deb"
+
+    - name: Create GitHub Release
+      if: startsWith(github.ref, 'refs/tags/')
+      uses: softprops/action-gh-release@v2
+      with:
+        files: "*.deb"
+        generate_release_notes: true
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
