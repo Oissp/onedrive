@@ -52,8 +52,7 @@ jobs:
           libsqlite3-dev \
           pkg-config \
           ldc \
-          libdbus-1-dev \
-          debhelper devscripts
+          libdbus-1-dev
 
     - name: Configure & Build (static link phobos)
       run: |
@@ -62,7 +61,13 @@ jobs:
         make "DC=ldc2 -link-defaultlib-shared=false"
 
     - name: Verify linking
-      run: ldd ./onedrive | grep phobos || echo "OK: phobos is statically linked"
+      run: |
+        if ldd ./onedrive | grep -q phobos; then
+          echo "ERROR: phobos is dynamically linked"
+          ldd ./onedrive
+          exit 1
+        fi
+        echo "OK: phobos is statically linked"
 
     - name: Build .deb package
       run: |
