@@ -1,8 +1,6 @@
 # .github/workflows/build-deb.yaml
 name: Build Debian Package
 
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
 
 on:
   push:
@@ -23,7 +21,7 @@ jobs:
       run: apt-get update && apt-get install -y git
 
     - name: Checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
       with:
         fetch-depth: 0
 
@@ -84,7 +82,7 @@ jobs:
         dpkg-deb --build --root-owner-group "$PKG_DIR"
 
     - name: Upload .deb artifact
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       with:
         name: onedrive-${{ steps.version.outputs.version }}-amd64
         path: "*.deb"
