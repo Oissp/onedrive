@@ -21,7 +21,7 @@ jobs:
       run: apt-get update && apt-get install -y git
 
     - name: Checkout
-      uses: actions/checkout@v6
+      uses: actions/checkout@v5
       with:
         fetch-depth: 0
 
@@ -57,9 +57,9 @@ jobs:
 
     - name: Configure & Build (static link phobos)
       run: |
-        ./configure --prefix=/usr
+        ./configure --prefix=/usr DC=ldc2 DCFLAGS="-link-defaultlib-shared=false"
         make clean
-        make "DC=ldc2 -link-defaultlib-shared=false"
+        make
 
     - name: Verify linking
       run: |
@@ -80,12 +80,12 @@ jobs:
 
         mkdir -p "$PKG_DIR/DEBIAN"
 
-        printf 'Package: onedrive\nVersion: %s\nSection: net\nPriority: optional\nArchitecture: amd64\nDepends: libcurl4t64, libsqlite3-0, libdbus-1-3\nMaintainer: Your Name <your@email.com>\nDescription: OneDrive Client for Linux (Custom Build)\n  A free Microsoft OneDrive client for Linux.\n  Forked from https://github.com/abraunegg/onedrive\n' "$VERSION" > "$PKG_DIR/DEBIAN/control"
+        printf 'Package: onedrive\nVersion: %s\nSection: net\nPriority: optional\nArchitecture: amd64\nDepends: libcurl4t64, libsqlite3-0, libdbus-1-3\nMaintainer: ${{ github.repository_owner }} <${{ github.actor }}@users.noreply.github.com>\nDescription: OneDrive Client for Linux (Custom Build)\n  A free Microsoft OneDrive client for Linux.\n  Forked from https://github.com/abraunegg/onedrive\n' "$VERSION" > "$PKG_DIR/DEBIAN/control"
 
         dpkg-deb --build --root-owner-group "$PKG_DIR"
 
     - name: Upload .deb artifact
-      uses: actions/upload-artifact@v5
+      uses: actions/upload-artifact@v7
       with:
         name: onedrive-${{ steps.version.outputs.version }}-amd64
         path: "*.deb"
